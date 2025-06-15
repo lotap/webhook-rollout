@@ -75,6 +75,7 @@ services:
       - ${CONTAINER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
 
 ```
+> [!NOTE]
 > Do not use the above for an actual production `compose.yaml`. You should make sure to add ssl certs, necessary `restart` policy, `network` config, etc based on your needs
 
 Assuming the above `compose.yaml`, you can use an `.env` file like this:
