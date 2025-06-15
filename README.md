@@ -1,7 +1,7 @@
 # webhook-rollout
 [webhook](https://github.com/adnanh/webhook) and [docker-rollout](https://github.com/wowu/docker-rollout), 2 great libraries that go great together! 
 
-This repo creates a single image that packages them for convenience - providing you with a simple way to **deploy-on-push on any server with docker compose**
+This repo creates a single image that packages them for convenience - providing you with a simple way to **push-to-deploy on any server with docker compose**
 
 ## Usage
 
