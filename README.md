@@ -45,22 +45,22 @@ See [Adding Custom Hooks](#adding-custom-hooks) for more information.
 
 **Required**
 
-| Type | Name               | Description                                                           |
-| ---- | ------------------ | --------------------------------------------------------------------- |
-| ENV  | `APP_IMAGE`        | Docker image for your app (format: `ghcr.io/<username>/<repo>:<tag>`) |
-| ENV  | `APP_SERVICE_NAME` | Which service to apply the rollout to                                 |
+| Type   | Name               | Description                                                           |
+| ------ | ------------------ | --------------------------------------------------------------------- |
+| ENV    | `APP_IMAGE`        | Docker image for your app (format: `ghcr.io/<username>/<repo>:<tag>`) |
+| ENV    | `APP_SERVICE_NAME` | Which service to apply the rollout to                                 |
+| SECRET | `WEBHOOK_SECRET`   | Secret used for verification of the webhook                           |
 
 > [!NOTE]
-> ROLLOUT_SERVICE_NAME is only required if you are using the default `gh-pkg-rollout` hook. If you are [using custom hooks](#adding-custom-hooks), then you may be able to omit it.
+> These are only required for the default `gh-pkg-rollout` hook and `config.yaml`. If you [define custom hooks](#adding-custom-hooks), then you may be able to omit them.
 
 **Optional**
 
 | Type   | Name                | Description                                                             |
 | ------ | ------------------- | ----------------------------------------------------------------------- |
-| SECRET | `REGISTRY_PASSWORD` | Password (or access token) for the container registry                   |
-| SECRET | `WEBHOOK_SECRET`    | Secret used for verification of the webhook                             |
 | ENV    | `REGISTRY_URL`      | Container registry URL (`ghcr.io`, for example) used for `docker login` |
 | ENV    | `REGISTRY_USERNAME` | Username for the container registry                                     |
+| SECRET | `REGISTRY_PASSWORD` | Password (or access token) for the container registry                   |
 
 **Additional**
 
