@@ -1,30 +1,92 @@
 # webhook-rollout
-[webhook](https://github.com/adnanh/webhook) and [docker-rollout](https://github.com/wowu/docker-rollout), 2 great libraries that go great together! 
 
-This repo creates a single image that packages them for convenience - providing you with a simple way to **push-to-deploy on any server with docker compose**
+[webhook](https://github.com/adnanh/webhook) and [docker-rollout](https://github.com/wowu/docker-rollout), 2 great libraries that go great together!
+
+A simple way to **push-to-deploy on any server with docker compose**
+
+## Requirements
+
+1. A repository with automation that builds a new image on code changes. (See [Push your app to the GitHub Container Registry](#push-your-app-to-the-github-container-registry))
+
+2. A Webhook that triggers when that new image is pushed to a registry. (See [Set up a webhook in your GitHub Repo](#set-up-a-webhook-in-your-github-repo))
+
+3. A server that runs the image with Docker compose.
+
+4. A docker-aware reverse-proxy such as [Traefik](https://doc.traefik.io/traefik/getting-started/install-traefik/), [Caddy](https://caddyserver.com/docs/quick-starts/reverse-proxy), or [nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) that can handle routing incoming traffic between containers as a new image is rolled out.
 
 ## Usage
 
+### Volumes
+
+> [!NOTE]
+> The `/app` directory is the `WORKINGDIR` of the image
+
+**Required**
+
+`/app/compose.yaml` - The compose file with your service definitions.
+
+`/var/run/docker.sock` - The running Docker socket the container should attach to.
+
+> [!CAUTION]
+> Mounting the Docker socket as a volume [comes with security risks](https://docs.docker.com/engine/security/protect-access/), so it is recommended to [run Docker in Rootless mode](https://docs.docker.com/engine/security/rootless/) if possible. In rootless mode, the socket can typically be found at `/run/user/$UID/docker.sock`
+
+**Optional**
+
+`/var/scripts/` - A directory containing any custom hooks you would like to add
+
+`/etc/webhook/config.yaml` - The configuration file for the webhook service
+
+> [!IMPORTANT]
+> The image comes with a preconfigured `gh-pkg-rollout.sh` hook and `config.yaml` to handle webhooks from GitHub automatically.
+
+See [Adding Custom Hooks](#adding-custom-hooks) for more information.
+
+### Secrets & Env Vars
+
+**Required**
+
+| Type | Name               | Description                                                           |
+| ---- | ------------------ | --------------------------------------------------------------------- |
+| ENV  | `APP_IMAGE`        | Docker image for your app (format: `ghcr.io/<username>/<repo>:<tag>`) |
+| ENV  | `APP_SERVICE_NAME` | Which service to apply the rollout to                                 |
+
+> [!NOTE]
+> ROLLOUT_SERVICE_NAME is only required if you are using the default `gh-pkg-rollout` hook. If you are [using custom hooks](#adding-custom-hooks), then you may be able to omit it.
+
+**Optional**
+
+| Type   | Name                | Description                                                             |
+| ------ | ------------------- | ----------------------------------------------------------------------- |
+| SECRET | `REGISTRY_PASSWORD` | Password (or access token) for the container registry                   |
+| SECRET | `WEBHOOK_SECRET`    | Secret used for verification of the webhook                             |
+| ENV    | `REGISTRY_URL`      | Container registry URL (`ghcr.io`, for example) used for `docker login` |
+| ENV    | `REGISTRY_USERNAME` | Username for the container registry                                     |
+
+**Additional**
+
+Since `webhook-rollout` runs `docker compose` from within the container, it needs access to any env vars that are necessary for your web app and reverse proxy.
+
+For example, in the [Traefik example](#traefik-example) below, the `DOMAIN` is passed to the `webhook-rollout` service even though `webhook-rollout` does not explicitly reference it.
+
+> [!TIP]
+> If you are using a `.env` file, you can mount it as a volume to handle such cases. (But that may also add some unnecessary exposure of your env vars)
+
 ### Configuring your compose file
 
-This is intended to be used with a docker-aware reverse proxy like [Traefik](https://doc.traefik.io/traefik/getting-started/install-traefik/), [Caddy](https://caddyserver.com/docs/quick-starts/reverse-proxy), or [nginx-proxy](https://github.com/nginx-proxy/nginx-proxy).
-
-You also will need to mount the Docker socket as a volume. [That comes with security risks](https://docs.docker.com/engine/security/protect-access/), so it is recommended to [run Docker in Rootless mode](https://docs.docker.com/engine/security/rootless/) if possible. In rootless mode, the socket can be found at `/run/user/$UID/docker.sock`
-
-### Traefik Example
+#### Traefik Example
 
 example `compose.yaml`
 
 ```yaml
 secrets:
-  GH_TOKEN:
-    environment: "GH_TOKEN"
+  REGISTRY_PASSWORD:
+    environment: "REGISTRY_PASSWORD"
   WEBHOOK_SECRET:
     environment: "WEBHOOK_SECRET"
 
 services:
   webapp:
-    image: ${IMAGE:-webapp:latest}
+    image: ${APP_IMAGE:-webapp:latest}
     environment:
       APP_PORT: ${APP_PORT:-3000}
     healthcheck:
@@ -43,15 +105,18 @@ services:
   webhook-rollout:
     image: webhook-rollout
     environment:
-      - GH_USERNAME=${GH_USERNAME}
-      - ROLLOUT_SERVICE_NAME=webapp
+      - REGISTRY_URL=${REGISTRY_URL}
+      - REGISTRY_USERNAME=${REGISTRY_USERNAME}
+      - APP_IMAGE=${APP_IMAGE}
+      - APP_SERVICE_NAME=webapp
+      - DOMAIN=${DOMAIN}
     secrets:
-      - GH_TOKEN
+      - REGISTRY_PASSWORD
       - WEBHOOK_SECRET
     volumes:
       - ${CONTAINER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
-      - ./webhook-rollout/scripts:/var/scripts/:ro
-      - ./webhook-rollout/config.yaml:/etc/webhook/config.yaml:ro
+      - ./webhook-rollout/scripts:/var/scripts/
+      - ./webhook-rollout/config.yaml:/etc/webhook/config.yaml
       - ./compose.yaml:/app/compose.yaml:ro
     labels:
       - traefik.enable=true
@@ -73,28 +138,56 @@ services:
       - 9000:9000 # Webhook
     volumes:
       - ${CONTAINER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
-
 ```
+
+> [!WARNING]
+> If you use an env var with a name other than `$APP_IMAGE` to define the image in your web app service definition, make sure to pass it into the `webhook-rollout` service.
+> Otherwise, the container will fail while attempting to restart the service.
+
 > [!NOTE]
-> Do not use the above for an actual production `compose.yaml`. You should make sure to add ssl certs, necessary `restart` policy, `network` config, etc based on your needs
+> This example uses a `CONTAINER_SOCKET` env var for the socket location so that the file can be used locally (with rootful Docker) or on a remote server (in rootless mode). But that env var is not referenced within the `webhook-rollout` image.
 
-Assuming the above `compose.yaml`, you can use an `.env` file like this:
+> [!TIP]
+> Make sure to add ssl certs, necessary `restart` policy, `network` config, etc based on your needs for a production deployment.
+
+##### SSL Certs
+
+If you are using [Traefik](https://doc.traefik.io/traefik/getting-started/install-traefik/) to handle a cert, you will need to share access to it with the `webhook-rollout` service.
+
+```yaml
+webhook-rollout:
+  # ...
+  volumes:
+    # ...
+    - ./acme:/app/acme
+
+traefik:
+  # ...
+  command:
+    # ...
+    - --certificatesresolvers.app-resolver.acme.storage=/acme/acme.json
+  volumes:
+    # ...
+    - ./acme:/acme
 ```
-GH_USERNAME=#GitHub username
-GH_TOKEN=#GitHub Personal Access Token
-WEBHOOK_SECRET=#Secret used in the webhook
-IMAGE=#Docker image for your webapp (format: ghcr.io/<username>/<repo>:<tag>)
-CONTAINER_SOCKET=#The docker socket to connect to (/run/user/<uid>/docker.sock in docker rootless)
-DOMAIN=#Full domain name for the web application (format: www.example.com)
-```
 
-### GitHub 
-
-#### Pushing your app to the GitHub Package Repository
+### Adding Custom Hooks
 
 ...(Docs coming soon)
 
-#### Setting up the webhook in your GitHub Repo
+> [!IMPORTANT]
+> Any binaries you need for custom hooks will need to be added by cloning/forking and building a custom image.
+
+## GitHub Configuration
+
+### Push your app to the GitHub Container Registry
 
 ...(Docs coming soon)
 
+### Set up a webhook in your GitHub Repo
+
+...(Docs coming soon)
+
+### Get a Personal Access Token
+
+...(Docs coming soon)

@@ -20,7 +20,7 @@ RUN mkdir -p \
   /app \
   /etc/webhook \
   /var/log/webhook \
-  /var/scripts/ \
+  /var/scripts \
   ~/.docker/cli-plugins
 
 # Install docker-rollout https://github.com/wowu/docker-rollout
@@ -34,12 +34,12 @@ RUN  rm -rf /tmp/docker-rollout.tar.gz /tmp/wowu-docker-rollout-*
 # Make the script executable
 RUN chmod +x ~/.docker/cli-plugins/docker-rollout
 
-# Copy the start script to the app directory and make it executable
-COPY ./app/start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Copy the start script and make it executable
+COPY ./usr/loccal/bin/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/loccal/bin/start.sh
 
 WORKDIR /app
 
 EXPOSE 9000
 
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["/usr/loccal/bin/start.sh"]

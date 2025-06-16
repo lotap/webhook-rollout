@@ -1,5 +1,5 @@
-- id: gh-package-rollout
-  execute-command: "/var/scripts/gh-package-rollout.sh"
+- id: gh-pkg-rollout
+  execute-command: "/var/scripts/gh-pkg-rollout.sh"
   command-working-directory: "/app"
   trigger-rule:
     and:
@@ -17,7 +17,7 @@
             name: X-Hub-Signature-256
       - match:
           type: value
-          value: '{{ getenv "IMAGE" }}'
+          value: '{{ getenv "APP_IMAGE" }}'
           parameter:
             source: payload
             name: registry_package.package_version.package_url
