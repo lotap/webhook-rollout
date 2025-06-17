@@ -35,8 +35,8 @@ A simple way to **push-to-deploy on any server with docker compose**
 
 `/etc/webhook/config.yaml` - The configuration file for the webhook service
 
-The image comes with a preconfigured `gh-pkg-rollout.sh` hook and `config.yaml` to handle webhooks from GitHub automatically.
-See [Adding Custom Hooks](#adding-custom-hooks) for more information.
+> The image comes with a preconfigured `gh-pkg-rollout.sh` hook and `config.yaml` to handle webhooks from GitHub automatically.
+> See [Adding Custom Hooks](#adding-custom-hooks) for more information.
 
 ### Secrets & Env Vars
 
