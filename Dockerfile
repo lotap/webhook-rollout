@@ -42,4 +42,4 @@ WORKDIR /app
 
 EXPOSE 9000
 
-ENTRYPOINT ["/usr/loccal/bin/start.sh"]
+ENTRYPOINT ["/usr/loccal/bin/entrypoint.sh"]
