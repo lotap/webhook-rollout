@@ -18,8 +18,7 @@ A simple way to **push-to-deploy on any server with docker compose**
 
 ### Volumes
 
-> [!NOTE]
-> The `/app` directory is the `WORKINGDIR` of the image
+`/app` directory is the `WORKINGDIR` of the image
 
 **Required**
 
@@ -36,23 +35,18 @@ A simple way to **push-to-deploy on any server with docker compose**
 
 `/etc/webhook/config.yaml` - The configuration file for the webhook service
 
-> [!IMPORTANT]
-> The image comes with a preconfigured `gh-pkg-rollout.sh` hook and `config.yaml` to handle webhooks from GitHub automatically.
-
+The image comes with a preconfigured `gh-pkg-rollout.sh` hook and `config.yaml` to handle webhooks from GitHub automatically.
 See [Adding Custom Hooks](#adding-custom-hooks) for more information.
 
 ### Secrets & Env Vars
 
-**Required**
+**Required** (if you are using the default `gh-pkg-rollout` hook and `config.yaml`)
 
 | Type   | Name               | Description                                                           |
 | ------ | ------------------ | --------------------------------------------------------------------- |
 | ENV    | `APP_IMAGE`        | Docker image for your app (format: `ghcr.io/<username>/<repo>:<tag>`) |
 | ENV    | `APP_SERVICE_NAME` | Which service to apply the rollout to                                 |
 | SECRET | `WEBHOOK_SECRET`   | Secret used for verification of the webhook                           |
-
-> [!NOTE]
-> These are only required for the default `gh-pkg-rollout` hook and `config.yaml`. If you [define custom hooks](#adding-custom-hooks), then you may be able to omit them.
 
 **Optional**
 
@@ -63,22 +57,19 @@ See [Adding Custom Hooks](#adding-custom-hooks) for more information.
 | ENV    | `WEBHOOK_PORT`      | Port the image listens on (default 9000)                                |
 | SECRET | `REGISTRY_PASSWORD` | Password (or access token) for the container registry                   |
 
-**Additional**
-
-Since `webhook-rollout` runs `docker compose` from within the container, it needs access to any env vars that are necessary for your web app and reverse proxy.
-
-For example, in the [Traefik example](#traefik-example) below, the `DOMAIN` is passed to the `webhook-rollout` service even though `webhook-rollout` does not explicitly reference it.
-
-> [!TIP]
+> [!IMPORTANT]
+> Since `webhook-rollout` runs `docker compose` from within the container, it needs access to any env vars that are necessary for your web app and reverse proxy.
+> For example, in the [Traefik example](#traefik-example) below, the `DOMAIN` is passed to the `webhook-rollout` service because the `webapp` service requires it for .
+>
 > If you are using a `.env` file, you can mount it as a volume to handle such cases. (But that may also add some unnecessary exposure of your env vars)
 
 ### Configuring your compose file
 
 #### Traefik Example
 
-example `compose.yaml`
-
 ```yaml
+# compose.yaml
+
 secrets:
   REGISTRY_PASSWORD:
     environment: "REGISTRY_PASSWORD"
@@ -106,10 +97,10 @@ services:
   webhook-rollout:
     image: webhook-rollout
     environment:
-      - REGISTRY_URL=${REGISTRY_URL}
-      - REGISTRY_USERNAME=${REGISTRY_USERNAME}
       - APP_IMAGE=${APP_IMAGE}
       - APP_SERVICE_NAME=webapp
+      - REGISTRY_URL=${REGISTRY_URL}
+      - REGISTRY_USERNAME=${REGISTRY_USERNAME}
       - WEBHOOK_PORT=${WEBHOOK_PORT:-9000}
       - DOMAIN=${DOMAIN}
     secrets:
@@ -117,8 +108,6 @@ services:
       - WEBHOOK_SECRET
     volumes:
       - ${CONTAINER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
-      - ./webhook-rollout/scripts:/var/scripts/
-      - ./webhook-rollout/config.yaml:/etc/webhook/config.yaml
       - ./compose.yaml:/app/compose.yaml:ro
     labels:
       - traefik.enable=true
@@ -141,16 +130,6 @@ services:
     volumes:
       - ${CONTAINER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
 ```
-
-> [!WARNING]
-> If you use an env var with a name other than `$APP_IMAGE` to define the image in your web app service definition, make sure to pass it into the `webhook-rollout` service.
-> Otherwise, the container will fail while attempting to restart the service.
-
-> [!NOTE]
-> This example uses a `CONTAINER_SOCKET` env var for the socket location so that the file can be used locally (with rootful Docker) or on a remote server (in rootless mode). But that env var is not referenced within the `webhook-rollout` image.
-
-> [!TIP]
-> Make sure to add ssl certs, necessary `restart` policy, `network` config, etc based on your needs for a production deployment.
 
 ##### SSL Certs
 
