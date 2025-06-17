@@ -5,6 +5,7 @@ ARG DOCKER_VERSION=~28.2
 ARG DOCKER_CLI_COMPOSE_VERSION=~2.36
 ARG WEBHOOK_VERSION=~2.8
 ARG CURL_VERSION=~8.14
+ARG TINI_VERSION=~0.19
 
 ARG DOCKER_ROLLOUT_TAG=v0.12
 
@@ -16,7 +17,8 @@ RUN apk update && apk add --no-cache \
   docker=${DOCKER_VERSION} \
   docker-cli-compose=${DOCKER_CLI_COMPOSE_VERSION} \
   webhook=${WEBHOOK_VERSION} \
-  curl=${CURL_VERSION}
+  curl=${CURL_VERSION} \
+  tini=${TINI_VERSION}
 
 # Create necessary directories
 RUN mkdir -p \
@@ -45,4 +47,4 @@ WORKDIR /app
 
 EXPOSE $WEBHOOK_PORT
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
