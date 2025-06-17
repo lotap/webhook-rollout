@@ -34,12 +34,12 @@ RUN  rm -rf /tmp/docker-rollout.tar.gz /tmp/wowu-docker-rollout-*
 # Make the script executable
 RUN chmod +x ~/.docker/cli-plugins/docker-rollout
 
-# Copy the start script and make it executable
-COPY ./usr/loccal/bin/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/loccal/bin/start.sh
+# Copy the entrypoint script and make it executable
+COPY ./root/usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /app
 
 EXPOSE 9000
 
-ENTRYPOINT ["/usr/loccal/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
