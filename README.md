@@ -18,7 +18,7 @@ A simple way to **push-to-deploy on any server with docker compose**
 
 ### Volumes
 
-`/app` directory is the `WORKINGDIR` of the image
+`/app` is the `WORKINGDIR` of the image
 
 **Required**
 
