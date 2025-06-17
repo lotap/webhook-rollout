@@ -8,6 +8,9 @@ ARG CURL_VERSION=~8.14
 
 ARG DOCKER_ROLLOUT_TAG=v0.12
 
+ARG WEBHOOK_PORT=9000
+ENV WEBHOOK_PORT=$WEBHOOK_PORT
+
 # Install packages with pinned versions
 RUN apk update && apk add --no-cache \
   docker=${DOCKER_VERSION} \
@@ -40,6 +43,6 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /app
 
-EXPOSE 9000
+EXPOSE $WEBHOOK_PORT
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

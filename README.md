@@ -60,6 +60,7 @@ See [Adding Custom Hooks](#adding-custom-hooks) for more information.
 | ------ | ------------------- | ----------------------------------------------------------------------- |
 | ENV    | `REGISTRY_URL`      | Container registry URL (`ghcr.io`, for example) used for `docker login` |
 | ENV    | `REGISTRY_USERNAME` | Username for the container registry                                     |
+| ENV    | `WEBHOOK_PORT`      | Port the image listens on (default 9000)                                |
 | SECRET | `REGISTRY_PASSWORD` | Password (or access token) for the container registry                   |
 
 **Additional**
@@ -109,6 +110,7 @@ services:
       - REGISTRY_USERNAME=${REGISTRY_USERNAME}
       - APP_IMAGE=${APP_IMAGE}
       - APP_SERVICE_NAME=webapp
+      - WEBHOOK_PORT=${WEBHOOK_PORT:-9000}
       - DOMAIN=${DOMAIN}
     secrets:
       - REGISTRY_PASSWORD
@@ -122,14 +124,14 @@ services:
       - traefik.enable=true
       - traefik.http.routers.webhook.entrypoints=webhook
       - traefik.http.routers.webhook.rule=Host(`${DOMAIN:-localhost}`)
-      - traefik.http.services.webhook.loadbalancer.server.port=9000
+      - traefik.http.services.webhook.loadbalancer.server.port=${WEBHOOK_PORT:-9000}
 
   traefik:
     image: traefik
     command:
       # ENTRY
       - --entryPoints.web.address=:80
-      - --entryPoints.webhook.address=:9000
+      - --entryPoints.webhook.address=:${WEBHOOK_PORT:-9000}
       # PROVIDER
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
