@@ -5,7 +5,7 @@
     [
       "@semantic-release/commit-analyzer",
       {
-        "preset": "eslint"
+        "preset": "conventionalcommits"
       }
     ],
     "@semantic-release/release-notes-generator",

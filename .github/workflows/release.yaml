@@ -35,7 +35,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -D conventional-changelog-eslint
+          npm install -D conventional-changelog-conventionalcommits
 
       - name: Release
         id: semantic
