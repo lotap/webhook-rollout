@@ -1,9 +1,19 @@
 name: Build & Publish Image
 
 on:
-  push:
-    tags: ["*.*.*"]
+  # push:
+  #   tags: ["*.*.*"]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to build"
+        required: true
+        type: string
+    outputs:
+      image-digest:
+        description: "Docker image digest"
+        value: ${{ jobs.build-and-push-image.outputs.digest }}
 
 permissions:
   contents: read
@@ -13,6 +23,8 @@ permissions:
 
 jobs:
   build-and-push-image:
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository using git
@@ -41,7 +53,7 @@ jobs:
           images: |
             ghcr.io/${{ github.repository }}
             ${{ github.repository }}
-          tags: type=semver,pattern={{version}}
+          tags: type=semver,pattern={{version}},value=${{ inputs.version || github.ref_name }}
 
       - name: Build and push Docker image
         id: push
