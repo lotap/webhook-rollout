@@ -16,10 +16,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    outputs:
-      released: ${{ steps.semantic.outputs.new_release_published }}
-      version: ${{ steps.semantic.outputs.new_release_version }}
-      tag: ${{ steps.semantic.outputs.new_release_git_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,11 +38,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
-
-  build-and-push:
-    needs: release
-    if: needs.release.outputs.released == 'true'
-    uses: ./.github/workflows/publish.yaml
-    with:
-      version: ${{ needs.release.outputs.version }}
-    secrets: inherit
