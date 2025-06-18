@@ -2,7 +2,7 @@ name: Build & Publish Image
 
 on:
   push:
-    branches: [trunk]
+    # branches: [trunk]
     # paths: ["root/**", "Dockerfile"]
     tags: ["*.*.*"]
   workflow_dispatch:
