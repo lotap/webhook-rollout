@@ -1,10 +1,9 @@
-# Based on:
-# https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action
 name: Build & Publish Image
 
 on:
   push:
     branches: [trunk]
+    paths: ["root/**", "Dockerfile"]
     tags: ["*.*.*"]
   workflow_dispatch:
 
