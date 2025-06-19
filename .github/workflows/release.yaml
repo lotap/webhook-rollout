@@ -16,10 +16,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    outputs:
-      released: ${{ steps.semantic.outputs.new_release_published }}
-      version: ${{ steps.semantic.outputs.new_release_version }}
-      tag: ${{ steps.semantic.outputs.new_release_git_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,19 +36,6 @@ jobs:
       - name: Release
         id: semantic
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Using a PAT instead of GITHUB_TOKEN allows the publish workflow to pickup when this action creates a release
+          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_PAT }}
         run: npx semantic-release
-
-      - name: 👀 Debug semantic-release outputs
-        run: |
-          echo "new_release_published: ${{ steps.semantic.outputs.new_release_published }}"
-          echo "new_release_version:   ${{ steps.semantic.outputs.new_release_version }}"
-          echo "new_release_git_tag:   ${{ steps.semantic.outputs.new_release_git_tag }}"
-
-  build-and-push:
-    needs: release
-    if: needs.release.outputs.released == 'true'
-    uses: ./.github/workflows/publish.yaml
-    with:
-      version: ${{ needs.release.outputs.version }}
-    secrets: inherit
