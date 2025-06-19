@@ -1,5 +1,8 @@
 # webhook-rollout
 
+[![GitHub Release](https://img.shields.io/github/v/release/lotap/webhook-rollout?display_name=tag)](https://github.com/lotap/webhook-rollout/releases) [![Docker Image Version](https://img.shields.io/docker/v/lotap/webhook-rollout?logo=docker&logoColor=white&color=2496ED)](https://hub.docker.com/r/lotap/webhook-rollout)
+[![Dependabot Updates](https://github.com/lotap/webhook-rollout/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/lotap/webhook-rollout/actions/workflows/dependabot/dependabot-updates) [![semantic-release: conventionalcommits](https://img.shields.io/badge/semantic--release-conventionalcommits-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+
 [webhook](https://github.com/adnanh/webhook) and [docker-rollout](https://github.com/wowu/docker-rollout), 2 great libraries that go great together!
 
 A simple way to **push-to-deploy on any server with docker compose**
