@@ -13,7 +13,7 @@ update_dockerfile_arg() {
 	local prefix=$3 # Optional prefix like '~'
 
 	echo "Updating ${arg_name} to ${prefix}${new_version}"
-	sed -i "s/^\(ARG ${arg_name}\s*=\s*\).*/\1${prefix}${new_version}/" Dockerfile
+	sed -i '' "s/^\(ARG ${arg_name}\s*=\s*\).*/\1${prefix}${new_version}/" Dockerfile
 }
 
 # Function to parse the output of apk policy and update dockerfile with the latest version 
@@ -24,7 +24,7 @@ process_and_update_apk_version() {
 
 	# Parse the version from the provided text block
 	local latest_ver
-	latest_ver=$(echo "$policy_output" | grep -v "Installed" | grep -v "===" | head -n 1 | awk '{print $1}' | cut -d'-' -f1)
+	latest_ver=$(echo "$package_section" | grep -E '^\s+[0-9]+\.' | head -n 1 | awk '{print $1}' | cut -d'-' -f1)
 
 	# Check if a valid version was found and update the Dockerfile
 	if [ -n "$latest_ver" ] && [ "$latest_ver" != "policy:" ]; then
@@ -77,7 +77,11 @@ update_all_apk_packages() {
 
 				# Extract the section for this specific package
 				local package_section
-				package_section=$(echo "$apk_output" | awk "/=== ${arg_var}:${pkg_name} ===/,/=== .* ===/" | head -n -1)
+				package_section=$(echo "$apk_output" | awk "
+					/=== ${arg_var}:${pkg_name} ===/ { found=1; next }
+					found && /=== .* ===/ { found=0 }
+					found { print }
+				")
 
 				# Handle error cases
 				if echo "$package_section" | grep -q "ERROR: ${pkg_name}"; then
@@ -175,7 +179,7 @@ trap 'rm -f "$GITHUB_RELEASES_FILE" "$APK_PACKAGES_FILE"' EXIT
 
 # Discover GitHub releases by parsing URLs
 echo "--> Searching for GitHub release definitions (_RELEASE)..."
-RELEASE_ARGS=$(grep -oP '^ARG\s+\K([A-Z0-9_]+_RELEASE)' Dockerfile || true)
+RELEASE_ARGS=$(grep -o "ARG[[:space:]]*[A-Z0-9_]*_RELEASE" Dockerfile | sed 's/ARG[[:space:]]*//' || true)
 
 if [ -n "$RELEASE_ARGS" ]; then
 	# Create a "flattened" version of the Dockerfile
@@ -194,15 +198,10 @@ fi
 
 # Discover APK packages from the 'apk add' command
 echo "--> Searching for APK package definitions (_VERSION)..."
-awk '
-	/RUN apk add/ { in_block=1 }
-	in_block {
-		if (match($0, /([a-zA-Z0-9-]+)=\$\{([A-Z0-9_]+_VERSION)\}/, m)) {
-			print m[2] "=" m[1]
-		}
-		if ($0 !~ /\\$/) { in_block=0 }
-	}
-' Dockerfile >> "$APK_PACKAGES_FILE"
+sed -n '/apk add/,/[^\\]$/p' Dockerfile | \
+  grep -E '[a-zA-Z0-9-]+=\$\{[A-Z0-9_]*_VERSION\}' | \
+  sed -E 's/^[[:space:]]*([a-zA-Z0-9-]+)=\$\{([A-Z0-9_]*_VERSION)\}.*/\2=\1/' \
+  >> "$APK_PACKAGES_FILE"
 
 # Display discovered APK packages
 while IFS='=' read -r arg_var pkg_name; do

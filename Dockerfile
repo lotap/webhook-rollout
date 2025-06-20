@@ -7,7 +7,7 @@ ARG WEBHOOK_VERSION=~2.8
 ARG CURL_VERSION=~8.14
 ARG TINI_VERSION=~0.19
 
-ARG DOCKER_ROLLOUT_TAG=v0.12
+ARG DOCKER_ROLLOUT_RELEASE=v0.12
 
 ARG WEBHOOK_PORT=9000
 ENV WEBHOOK_PORT=$WEBHOOK_PORT
@@ -30,7 +30,7 @@ RUN mkdir -p \
 
 # Install docker-rollout https://github.com/wowu/docker-rollout
 # Download and extract tar from GitHub
-RUN curl -#L -o /tmp/docker-rollout.tar.gz https://api.github.com/repos/wowu/docker-rollout/tarball/${DOCKER_ROLLOUT_TAG} && \
+RUN curl -#L -o /tmp/docker-rollout.tar.gz https://api.github.com/repos/wowu/docker-rollout/tarball/${DOCKER_ROLLOUT_RELEASE} && \
   tar -xzf /tmp/docker-rollout.tar.gz -C /tmp/
 # Move docker-rollout script to Docker cli plugins directory
 RUN  mv /tmp/wowu-docker-rollout-*/docker-rollout ~/.docker/cli-plugins/
