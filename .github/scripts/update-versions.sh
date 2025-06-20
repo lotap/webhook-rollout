@@ -26,10 +26,13 @@ process_and_update_apk_version() {
 	local latest_ver
 	latest_ver=$(echo "$package_section" | grep -E '^\s+[0-9]+\.' | head -n 1 | awk '{print $1}' | cut -d'-' -f1)
 
+	local major_minor_ver
+	major_minor_ver=$(echo "$latest_ver" | cut -d'.' -f1-2)
+
 	# Check if a valid version was found and update the Dockerfile
-	if [ -n "$latest_ver" ] && [ "$latest_ver" != "policy:" ]; then
-		echo "  Found version for '${pkg_name}': ${latest_ver}"
-		update_dockerfile_arg "$arg_var" "$latest_ver" "~"
+	if [ -n "$major_minor_ver" ] && [ "$major_minor_ver" != "policy:" ]; then
+		echo "  Found version for '${pkg_name}': ${major_minor_ver} (from ${latest_ver})"
+		update_dockerfile_arg "$arg_var" "$major_minor_ver" "~"
 	else
 		echo "  Could not parse version for '${pkg_name}'. Skipping."
 	fi
