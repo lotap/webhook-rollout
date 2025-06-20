@@ -67,7 +67,8 @@ jobs:
             **⚠️ Please review the changes and test before merging.**
 
             *This PR was automatically created by the update-docker-deps workflow.*
-            EOF)
+            EOF
+            )
 
             gh pr create \
               --title "$COMMIT_MSG" \
