@@ -32,7 +32,7 @@ jobs:
       - name: Commit changes and create Pull Request
         if: steps.git_diff.outputs.changed == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_PAT }}
         run: |
           echo "Dockerfile has changed. Creating a Pull Request..."
 
