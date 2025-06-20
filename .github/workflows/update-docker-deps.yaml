@@ -21,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x ./.github/scripts/update_versions.sh
-          ./.github/scripts/update_versions.sh
+          ./.github/scripts/update-versions.sh
 
       - name: Check for changes
         id: git_diff
