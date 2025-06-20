@@ -60,15 +60,15 @@ jobs:
             echo "Creating new Pull Request..."
 
             PR_BODY=$(cat << 'EOF'
-            ## 🔄 Automated Dependency Updates
+          ## 🔄 Automated Dependency Updates
 
-            This PR updates Dockerfile dependencies to their latest versions:
+          This PR updates Dockerfile dependencies to their latest versions:
 
-            **⚠️ Please review the changes and test before merging.**
+          **⚠️ Please review the changes and test before merging.**
 
-            *This PR was automatically created by the update-docker-deps workflow.*
-            EOF
-            )
+          *This PR was automatically created by the update-docker-deps workflow.*
+          EOF
+          )
 
             gh pr create \
               --title "$COMMIT_MSG" \
