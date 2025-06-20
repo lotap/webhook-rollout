@@ -13,7 +13,7 @@ update_dockerfile_arg() {
 	local prefix=$3 # Optional prefix like '~'
 
 	echo "Updating ${arg_name} to ${prefix}${new_version}"
-	sed -i '' "s/^\(ARG ${arg_name}\s*=\s*\).*/\1${prefix}${new_version}/" Dockerfile
+	perl -pi -e "s|^ARG ${arg_name}[[:space:]]*=[[:space:]]*.*|ARG ${arg_name}=${prefix}${new_version}|" Dockerfile
 }
 
 # Function to parse the output of apk policy and update dockerfile with the latest version 
