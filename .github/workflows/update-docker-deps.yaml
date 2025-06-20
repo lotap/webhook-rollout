@@ -1,0 +1,81 @@
+name: Update Dockerfile Dependencies
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 15 * * *" # every day at 3 PM UTC
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run update script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x ./.github/scripts/update_versions.sh
+          ./.github/scripts/update_versions.sh
+
+      - name: Check for changes
+        id: git_diff
+        run: |
+          # Check if the Dockerfile was modified. If so, set the 'changed' output to 'true'.
+          git diff --quiet Dockerfile || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit changes and create Pull Request
+        if: steps.git_diff.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Dockerfile has changed. Creating a Pull Request..."
+
+          # Configure Git user
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Configure Branch and Commit Message
+          BRANCH_NAME="chore/update-docker-dependencies"
+          COMMIT_MSG="chore(deps): update Dockerfile dependencies"
+
+          # Create a new branch (or switch to it if it exists)
+          git checkout -b $BRANCH_NAME
+
+          # Add and commit the changes
+          git add Dockerfile
+          git commit -m "$COMMIT_MSG"
+
+          # Push the branch, using --force to overwrite if it exists from a previous run
+          git push --force --set-upstream origin $BRANCH_NAME
+
+          # Create the Pull Request using the GitHub CLI
+          # Check if a PR for this branch already exists to avoid errors
+          if ! gh pr view $BRANCH_NAME >/dev/null 2>&1; then
+            echo "Creating new Pull Request..."
+
+            PR_BODY=$(cat << 'EOF'
+            ## 🔄 Automated Dependency Updates
+
+            This PR updates Dockerfile dependencies to their latest versions:
+
+            **⚠️ Please review the changes and test before merging.**
+
+            *This PR was automatically created by the update-docker-deps workflow.*
+            EOF)
+
+            gh pr create \
+              --title "$COMMIT_MSG" \
+              --body "$PR_BODY" \
+              --base "${{ github.ref_name }}" \
+              --head "$BRANCH_NAME"
+
+            echo "✅ Pull request created successfully"
+          else
+            echo "Pull Request for branch $BRANCH_NAME already exists."
+          fi
