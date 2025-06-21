@@ -33,11 +33,14 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
             echo "TAG_TO_BUILD=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+            echo "APPLY_LATEST=true" >> $GITHUB_ENV
           elif [[ -n "${{ github.event.inputs.tag }}" ]]; then
             echo "TAG_TO_BUILD=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            echo "APPLY_LATEST=false" >> $GITHUB_ENV
           else
             LATEST=$(git tag --list --sort='-v:refname' | head -n1)
             echo "TAG_TO_BUILD=$LATEST" >> $GITHUB_ENV
+            echo "APPLY_LATEST=true" >> $GITHUB_ENV
           fi
           echo "Selected tag: $TAG_TO_BUILD"
 
@@ -70,6 +73,7 @@ jobs:
           tags: |
             type=raw,value=${{ env.TAG_TO_BUILD }}
             type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ env.APPLY_LATEST == 'true' }}
 
       - name: Build and push Docker image
         id: push
