@@ -54,9 +54,11 @@ jobs:
           # Push the branch, using --force to overwrite if it exists from a previous run
           git push --force --set-upstream origin $BRANCH_NAME
 
-          # Create the Pull Request using the GitHub CLI
-          # Check if a PR for this branch already exists to avoid errors
-          if ! gh pr view $BRANCH_NAME >/dev/null 2>&1; then
+          # Check for an open PR against this branch
+          OPEN_PR_EXISTS=$(gh pr list --head $BRANCH_NAME --state open --json number --jq length)
+
+          # Create the Pull Request using the GitHub CLI if there isn't one open
+          if [ "$OPEN_PR_EXISTS" -eq 0 ]; then
             echo "Creating new Pull Request..."
 
             PR_BODY=$(cat << 'EOF'
