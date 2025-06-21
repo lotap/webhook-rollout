@@ -38,4 +38,5 @@ jobs:
         env:
           # Using a PAT instead of GITHUB_TOKEN allows the publish workflow to pickup when this action creates a release
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_PAT }}
+          DEBUG: semantic-release:*
         run: npx semantic-release
