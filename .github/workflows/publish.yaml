@@ -68,7 +68,7 @@ jobs:
             ghcr.io/${{ github.repository }}
             ${{ github.repository }}
           tags: |
-            type=raw,template=${{ env.TAG_TO_BUILD }}
+            type=raw,value=${{ env.TAG_TO_BUILD }}
             type=semver,pattern={{version}}
 
       - name: Build and push Docker image
