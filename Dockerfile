@@ -39,6 +39,13 @@ RUN  rm -rf /tmp/docker-rollout.tar.gz /tmp/wowu-docker-rollout-*
 # Make the script executable
 RUN chmod +x ~/.docker/cli-plugins/docker-rollout
 
+# Copy default configuration file
+COPY ./etc/webhook/config.yaml /etc/webhook/config.yaml
+
+# Copy default script(s) to /var/scripts and make executable
+COPY ./var/scripts/gh-pkg-rollout.sh /var/scripts/gh-pkg-rollout.sh
+RUN chmod -R +x /var/scripts
+
 # Copy the entrypoint script and make it executable
 COPY ./root/usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
