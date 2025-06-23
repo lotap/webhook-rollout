@@ -98,7 +98,7 @@ services:
       - docker-rollout.pre-stop-hook=touch /tmp/drain && sleep 45
 
   webhook-rollout:
-    image: webhook-rollout
+    image: lotap/webhook-rollout
     environment:
       - APP_IMAGE=${APP_IMAGE}
       - APP_SERVICE_NAME=webapp
