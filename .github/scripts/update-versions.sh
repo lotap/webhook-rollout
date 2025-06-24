@@ -26,13 +26,10 @@ process_and_update_apk_version() {
 	local latest_ver
 	latest_ver=$(echo "$package_section" | grep -E '^\s+[0-9]+\.' | head -n 1 | awk '{print $1}' | cut -d'-' -f1)
 
-	local major_minor_ver
-	major_minor_ver=$(echo "$latest_ver" | cut -d'.' -f1-2)
-
 	# Check if a valid version was found and update the Dockerfile
-	if [ -n "$major_minor_ver" ] && [ "$major_minor_ver" != "policy:" ]; then
+	if [ -n "$latest_ver" ] && [ "$latest_ver" != "policy:" ]; then
 		echo "  Found version for '${pkg_name}': ${major_minor_ver} (from ${latest_ver})"
-		update_dockerfile_arg "$arg_var" "$major_minor_ver" "~"
+		update_dockerfile_arg "$arg_var" "$latest_ver"
 	else
 		echo "  Could not parse version for '${pkg_name}'. Skipping."
 	fi
@@ -215,7 +212,7 @@ done < "$APK_PACKAGES_FILE"
 echo "Updating Alpine base image..."
 if LATEST_ALPINE=$(curl --silent --fail --max-time 10 \
 	"https://hub.docker.com/v2/repositories/library/alpine/tags/?page_size=100" | \
-	jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+$' | sort -V | tail -n 1); then
+	jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1); then
 
 	update_dockerfile_arg "ALPINE_VERSION" "$LATEST_ALPINE"
 else
@@ -225,8 +222,8 @@ fi
 # Get current Alpine version more safely
 CURRENT_ALPINE_VERSION=$(grep "^ARG ALPINE_VERSION" Dockerfile | cut -d'=' -f2)
 if [ -z "$CURRENT_ALPINE_VERSION" ]; then
-	echo "Warning: Could not determine current Alpine version. Using 3.22 as fallback."
-	CURRENT_ALPINE_VERSION="3.22"
+	echo "Warning: Could not determine current Alpine version. Using 3.22.0 as fallback."
+	CURRENT_ALPINE_VERSION="3.22.0"
 fi
 
 echo "Using Alpine version: $CURRENT_ALPINE_VERSION"
