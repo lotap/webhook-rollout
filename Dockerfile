@@ -42,9 +42,9 @@ RUN chmod +x ~/.docker/cli-plugins/docker-rollout
 # Copy default configuration file
 COPY ./root/etc/webhook/config.yaml /etc/webhook/config.yaml
 
-# Copy default script(s) to /var/scripts and make executable
-COPY ./root/var/scripts/gh-pkg-rollout.sh /var/scripts/gh-pkg-rollout.sh
-RUN chmod -R +x /var/scripts
+# Copy default script(s) to /tmp and make executable
+COPY ./root/var/scripts/gh-pkg-rollout.sh /tmp/gh-pkg-rollout.sh
+RUN chmod +x /tmp/gh-pkg-rollout.sh
 
 # Copy the entrypoint script and make it executable
 COPY ./root/usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
