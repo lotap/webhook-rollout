@@ -1,6 +1,18 @@
 #!/usr/bin/env sh
 set -euo pipefail
 
+# If there are no custom scripts, check for existence of $APP_IMAGE and $APP_SERVICE_NAME
+if ! ls /var/scripts/*.sh >/dev/null 2>&1; then
+	missing=
+	[ -z "$APP_IMAGE" ] && missing="APP_IMAGE"
+	[ -z "$APP_SERVICE_NAME" ] && missing="$missing APP_SERVICE_NAME"
+	if [ -n "$missing" ]; then
+		echo "ERROR: missing required env var(s):${missing# }" >&2
+		echo "Either mount custom script(s) in /var/scripts or set APP_IMAGE and APP_SERVICE_NAME." >&2
+		exit 1
+	fi
+fi
+
 # Move default script to /var/scripts if it doesn't exist, otherwise delete tmp file
 if [ -f "/tmp/gh-pkg-rollout.sh" ]; then
 	if [ -f "/var/scripts/gh-pkg-rollout.sh" ]; then
