@@ -40,10 +40,10 @@ RUN  rm -rf /tmp/docker-rollout.tar.gz /tmp/wowu-docker-rollout-*
 RUN chmod +x ~/.docker/cli-plugins/docker-rollout
 
 # Copy default configuration file
-COPY ./etc/webhook/config.yaml /etc/webhook/config.yaml
+COPY ./root/etc/webhook/config.yaml /etc/webhook/config.yaml
 
 # Copy default script(s) to /var/scripts and make executable
-COPY ./var/scripts/gh-pkg-rollout.sh /var/scripts/gh-pkg-rollout.sh
+COPY ./root/var/scripts/gh-pkg-rollout.sh /var/scripts/gh-pkg-rollout.sh
 RUN chmod -R +x /var/scripts
 
 # Copy the entrypoint script and make it executable
