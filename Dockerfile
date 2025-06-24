@@ -55,3 +55,6 @@ WORKDIR /app
 EXPOSE $WEBHOOK_PORT
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
+
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD curl -f http://localhost:${WEBHOOK_PORT} || exit 1
