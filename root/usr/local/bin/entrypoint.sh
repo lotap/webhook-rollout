@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-set -e
+set -euo pipefail
 
 # Move default script to /var/scripts if it doesn't exist, otherwise delete tmp file
 if [ -f "/tmp/gh-pkg-rollout.sh" ]; then
@@ -24,4 +24,4 @@ if [ -f "/run/secrets/WEBHOOK_SECRET" ]; then
 	export WEBHOOK_SECRET
 fi
 
-exec webhook -hooks=/etc/webhook/config.yaml -template
+exec webhook -hooks=/etc/webhook/config.yaml -template -port=$WEBHOOK_PORT
