@@ -62,7 +62,7 @@ A simple way to **push-to-deploy on any server with docker compose**
 
 > [!IMPORTANT]
 > Since `webhook-rollout` runs `docker compose` from within the container, it needs access to any env vars that are necessary for your web app and reverse proxy.
-> For example, in the [Traefik example](#traefik-example) below, the `DOMAIN` is passed to the `webhook-rollout` service because the `webapp` service requires it for .
+> For example, in the [Traefik example](#traefik-example) below, the `DOMAIN` is passed to the `webhook-rollout` service because the `webapp` service requires it for deployment.
 >
 > If you are using a `.env` file, you can mount it as a volume to handle such cases. (But that may also add some unnecessary exposure of your env vars)
 
@@ -91,8 +91,8 @@ services:
       retries: 3
     labels:
       - traefik.enable=true
-      - traefik.http.routers.webapp.entrypoints=websecure
-      - traefik.http.routers.webapp.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.webapp.entrypoints=web
+      - traefik.http.routers.webapp.rule=Host(`${DOMAIN}`)
       - traefik.http.services.webapp.loadbalancer.server.port=${APP_PORT:-3000}
       # DRAIN CONTAINER ON ROLLOUT - https://docker-rollout.wowu.dev/container-draining.html
       - docker-rollout.pre-stop-hook=touch /tmp/drain && sleep 45
@@ -129,7 +129,7 @@ services:
       - --providers.docker.exposedbydefault=false
     ports:
       - 80:80 # HTTP
-      - 9000:9000 # Webhook
+      - ${WEBHOOK_PORT:-9000}:${WEBHOOK_PORT:-9000} # Webhook
     volumes:
       - ${CONTAINER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
 ```
@@ -152,7 +152,7 @@ traefik:
     - --certificatesresolvers.app-resolver.acme.storage=/acme/acme.json
   volumes:
     # ...
-    - ./acme:/acme
+    - ./acme:/app/acme
 ```
 
 ### Adding Custom Hooks
