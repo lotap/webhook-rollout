@@ -205,8 +205,8 @@ fi
 # Discover APK packages from the 'apk add' command
 echo "--> Searching for APK package definitions (_VERSION)..."
 sed -n '/apk add/,/[^\\]$/p' Dockerfile | \
-  grep -E '[a-zA-Z0-9-]+=\$\{[A-Z0-9_]*_VERSION\}' | \
-  sed -E 's/^[[:space:]]*([a-zA-Z0-9-]+)=\$\{([A-Z0-9_]*_VERSION)\}.*/\2=\1/' \
+  grep -E '[a-zA-Z0-9-]+~?=\$\{[A-Z0-9_]*_VERSION\}' | \
+  sed -E 's/^[[:space:]]*([a-zA-Z0-9-]+)~?=\$\{([A-Z0-9_]*_VERSION)\}.*/\2=\1/' \
   >> "$APK_PACKAGES_FILE"
 
 # Display discovered APK packages
