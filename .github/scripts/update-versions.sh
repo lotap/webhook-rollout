@@ -24,7 +24,7 @@ process_and_update_apk_version() {
 
 	# Parse the version from the provided text block
 	local latest_ver
-	latest_ver=$(echo "$package_section" | grep -Eo '^\s+[0-9]+\.[0-9]+\.[0-9]+-r[0-9]+' | head -n 1 | awk '{print $1}')
+	latest_ver=$(echo "$policy_output" | grep -Eo '^\s+[0-9]+\.[0-9]+\.[0-9]+-r[0-9]+' | head -n 1 | awk '{print $1}')
 
 	# Check if a valid version was found and update the Dockerfile
 	if [ -n "$latest_ver" ] && [ "$latest_ver" != "policy:" ]; then
