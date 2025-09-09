@@ -12,10 +12,10 @@ update_dockerfile_arg() {
   local new_version=$2
 
   echo "Updating ${arg_name} to ${new_version}"
-  # - `^ARG ${arg_name}\s*=\s*` matches the start of the line and ARG name.
-  # - `[^#\s]+` matches the old version string (any character that is not a space or a #).
-  # - `\$1` is a backreference to the captured group `(ARG ${arg_name}\s*=\s*)`.
-  perl -pi -e "s|^(ARG ${arg_name}\s*=\s*)[^#\s]+|\$1${new_version}|" Dockerfile
+    # ^(ARG <name>\s*=\s*) captures the prefix
+    # ([^#\s]+) captures the old version
+    # (.*) captures any trailing spaces or comments
+  perl -pi -e "s|^(ARG ${arg_name}\s*=\s*)[^#\s]+(.*)|\${1}${new_version}\${2}|" Dockerfile
 }
 
 # Function to parse the output of apk policy and update dockerfile with the latest version 
