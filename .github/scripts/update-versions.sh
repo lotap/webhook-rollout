@@ -8,12 +8,14 @@ set -e -o pipefail
 
 # Generic update function for Dockerfile ARGs
 update_dockerfile_arg() {
-	local arg_name=$1
-	local new_version=$2
-	local prefix=$3 # Optional prefix like '~'
+  local arg_name=$1
+  local new_version=$2
 
-	echo "Updating ${arg_name} to ${prefix}${new_version}"
-	perl -pi -e "s|^ARG ${arg_name}[[:space:]]*=[[:space:]]*.*|ARG ${arg_name}=${prefix}${new_version}|" Dockerfile
+  echo "Updating ${arg_name} to ${new_version}"
+  # - `^ARG ${arg_name}\s*=\s*` matches the start of the line and ARG name.
+  # - `[^#\s]+` matches the old version string (any character that is not a space or a #).
+  # - `\$1` is a backreference to the captured group `(ARG ${arg_name}\s*=\s*)`.
+  perl -pi -e "s|^(ARG ${arg_name}\s*=\s*)[^#\s]+|\$1${new_version}|" Dockerfile
 }
 
 # Function to parse the output of apk policy and update dockerfile with the latest version 
@@ -23,12 +25,16 @@ process_and_update_apk_version() {
 	local policy_output="$3"
 
 	# Parse the version from the provided text block
+	local latest_full
+	latest_full=$(echo "$policy_output" | grep -Eo '^\s+[0-9][0-9a-zA-Z\.\+\-]*-r[0-9]+' | head -n 1 | awk '{print $1}')
+
+	# Strip off the -rN subrelease for pinning
 	local latest_ver
-	latest_ver=$(echo "$policy_output" | grep -Eo '^\s+[0-9]+\.[0-9]+\.[0-9]+-r[0-9]+' | head -n 1 | awk '{print $1}')
+	latest_ver=$(echo "$latest_full" | sed 's/-r[0-9]\+$//')
 
 	# Check if a valid version was found and update the Dockerfile
 	if [ -n "$latest_ver" ] && [ "$latest_ver" != "policy:" ]; then
-		echo "  Found version for '${pkg_name}': ${major_minor_ver} (from ${latest_ver})"
+		echo "  Found version for '${pkg_name}': ${latest_ver} (from ${latest_full})"
 		update_dockerfile_arg "$arg_var" "$latest_ver"
 	else
 		echo "  Could not parse version for '${pkg_name}'. Skipping."
