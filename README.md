@@ -265,11 +265,23 @@ More information about the github container registry can be found [here](https:/
 
 ### Set up a webhook in your GitHub Repo
 
-...(Docs coming soon)
+1. Navigate to your repo's settings page and select webhooks from the sidebar
 
-### Get a Personal Access Token
+<img width="327" height="46" alt="Screenshot 2025-09-15 at 2 37 18 PM" src="https://github.com/user-attachments/assets/281d5c7a-199a-4513-ad30-d2087b093b9d" />
 
-...(Docs coming soon)
+2. Click "Add webhook"
+
+<img width="783" height="55" alt="Screenshot 2025-09-15 at 2 37 30 PM" src="https://github.com/user-attachments/assets/96c86375-a2a8-44d6-b79c-c77e1e91bbc6" />
+
+3. Configure the settings. Use application/json and securely generate a secret with `openssl rand -base64 32` or something similar to paste into the secret. Make sure that secret is also made available as a environment variable for your web app.
+
+ <img width="761" height="649" alt="Screenshot 2025-09-15 at 2 36 15 PM" src="https://github.com/user-attachments/assets/b022fc53-ec10-49fa-92da-5aed4a03b239" />
+
+4. Select the "packages" event
+
+<img width="297" height="106" alt="Screenshot 2025-09-15 at 2 34 11 PM" src="https://github.com/user-attachments/assets/0a0232b4-a02b-4e1b-b161-b661a564d17c" />
+
+5. Activate the webhook and begin testing. You should be all set!
 
 ## Securing your webhook
 
