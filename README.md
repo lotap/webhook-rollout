@@ -7,6 +7,12 @@
 
 A simple way to **push-to-deploy on any server with docker compose**
 
+## How it works
+
+When you put webhook-rollout on a server, it listens for a webhook request on a specified port (default 9000). You can configure github to build, package, and register an app image when you commit a change. And when the build completes, you can configure github to send the webhook request to your server. From there, [rollout](https://github.com/wowu/docker-rollout) takes over and will automatically handle pulling the newly registered image and updating your app with no downtime.
+
+This is mostly intended for use with github actions and the github container registry, but the core implementation is workflow/registry agnostic.
+
 ## Requirements
 
 1. A repository with automation that builds a new image on code changes. (See [Push your app to the GitHub Container Registry](#push-your-app-to-the-github-container-registry))
@@ -157,10 +163,34 @@ traefik:
 
 ### Adding Custom Hooks
 
-...(Docs coming soon)
+webhook-rollout comes pre-configured with a single script that will work for most people. If you need additional functionality, you will need to update code in two places and mount them as volumes:
+
+1. The actual script(s). Mounted to `/var/scripts/`
+
+2. The configuration file. Mounted to `/etc/webhook/config.yaml`. This acts as a place to register the scripts and add rules for their execution. [Configuration details can be found in the webhook readme and docs](https://github.com/adnanh/webhook#configuration). You can find the default config for this project at `root/etc/webhook/config.yaml`. Note that this project expects the .yaml extension. You will need to provide a custom entry script to use .json. See `root/usr/local/bin/entrypoint.sh` for details.
 
 > [!IMPORTANT]
-> Any binaries you need for custom hooks will need to be added by cloning/forking and building a custom image.
+> Any binaries you need for custom hooks will need to be installed or added to the Dockerfile by cloning/forking and building a custom image.
+
+#### Example Custom Hook
+
+```sh
+#!/usr/bin/env sh
+set -e
+
+# install jq
+if ! command -v jq > /dev/null 2>&1; then
+    apk add --no-cache jq
+fi
+
+# grab data from an endpoint
+RES=$(wget -qO- https://jsonplaceholder.typicode.com/posts/1)
+
+# log the json data
+echo "$RES" | jq .
+
+exit 0
+```
 
 ## GitHub Configuration
 
@@ -175,3 +205,7 @@ traefik:
 ### Get a Personal Access Token
 
 ...(Docs coming soon)
+
+## Securing your webhook
+
+It's recommended to limit connections to your webhook port to prevent malicious activity, much like you would for ssh. If you are using [ufw](https://help.ubuntu.com/community/UFW), you can run `ufw limit 9000/tcp`.
