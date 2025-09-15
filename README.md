@@ -196,7 +196,72 @@ exit 0
 
 ### Push your app to the GitHub Container Registry
 
-...(Docs coming soon)
+Creating an image automatically is relatively simple to set up with a github action. You can see this project's action to do so at `.github/workflows/publish.yaml`
+
+Here is a simple example for a generic web app that creates an image when a change to `apps/web` is made on the `trunk` branch:
+
+```yaml
+name: Build & Publish @/apps/web
+
+on:
+  push:
+    branches: [trunk]
+    paths: ["apps/web/**"]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-web
+
+concurrency:
+  group: web
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your repository using git
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+```
+
+The code above is based on the [github documentation found here](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action).
+
+More information about the github container registry can be found [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 
 ### Set up a webhook in your GitHub Repo
 
