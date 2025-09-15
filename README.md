@@ -275,7 +275,7 @@ More information about the github container registry can be found [here](https:/
 
 3. Configure the settings. Use application/json and securely generate a secret with `openssl rand -base64 32` or something similar to paste into the secret. Make sure that secret is also made available as a environment variable for your web app.
 
- <img width="761" height="649" alt="Screenshot 2025-09-15 at 2 36 15 PM" src="https://github.com/user-attachments/assets/b022fc53-ec10-49fa-92da-5aed4a03b239" />
+<img width="761" height="649" alt="Screenshot 2025-09-15 at 2 36 15 PM" src="https://github.com/user-attachments/assets/b022fc53-ec10-49fa-92da-5aed4a03b239" />
 
 4. Select the "packages" event
 
