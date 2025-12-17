@@ -7,7 +7,7 @@
       {
         "preset": "conventionalcommits",
         "releaseRules": [
-          { "type": "chore", "scope": "deps", "release": "patch" }
+          { "type": "chore", "scope": "dockerfile-deps", "release": "patch" }
         ]
       }
     ],

@@ -41,8 +41,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # Configure Branch and Commit Message
-          BRANCH_NAME="chore/update-docker-dependencies"
-          COMMIT_MSG="chore(deps): update Dockerfile dependencies"
+          BRANCH_NAME="chore/update-dockerfile-dependencies"
+          COMMIT_MSG="chore(dockerfile-deps): update Dockerfile dependencies"
 
           # Create a new branch (or switch to it if it exists)
           git checkout -b $BRANCH_NAME
