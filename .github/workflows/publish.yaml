@@ -47,10 +47,14 @@ jobs:
       - name: Checkout code at TAG_TO_BUILD
         run: git checkout "$TAG_TO_BUILD"
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          # Use latest buildkit for better multi-arch support
           driver-opts: |
             image=moby/buildkit:latest
 
