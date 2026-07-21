@@ -12,8 +12,8 @@ ARG WEBHOOK_PORT=9000
 ENV WEBHOOK_PORT=$WEBHOOK_PORT
 
 # Install packages with pinned versions
-RUN --mount=type=cache,target=/var/cache/apk \
-  apk add --no-cache \
+RUN apk add --no-cache \
+  ca-certificates \
   docker~=${DOCKER_VERSION} \
   docker-cli-compose~=${DOCKER_CLI_COMPOSE_VERSION} \
   webhook~=${WEBHOOK_VERSION} \
