@@ -29,20 +29,15 @@ RUN mkdir -p \
   /root/.docker/cli-plugins
 
 # Install docker-rollout https://github.com/wowu/docker-rollout
-# Download and extract tar from GitHub
-RUN curl -#L -o /tmp/docker-rollout.tar.gz https://api.github.com/repos/wowu/docker-rollout/tarball/${DOCKER_ROLLOUT_RELEASE} \
-  && tar -xzf /tmp/docker-rollout.tar.gz -C /tmp/ \
-  # Move docker-rollout script to Docker cli plugins directory
-  && mv /tmp/wowu-docker-rollout-*/docker-rollout /root/.docker/cli-plugins/ \
-  # Cleanup excess files
-  && rm -rf /tmp/docker-rollout.tar.gz /tmp/wowu-docker-rollout-* \
-  # Make the script executable
-  && chmod +x /root/.docker/cli-plugins/docker-rollout
+RUN curl -fsSL -o /root/.docker/cli-plugins/docker-rollout \
+  https://raw.githubusercontent.com/wowu/docker-rollout/${DOCKER_ROLLOUT_RELEASE}/docker-rollout && \
+  chmod 755 /root/.docker/cli-plugins/docker-rollout
 
 # Copy default configuration file
 COPY ./root/etc/webhook/config.yaml /etc/webhook/config.yaml
 
 # Copy default script(s) to /tmp and make executable
+# (The entrypoint script will move it to /var or delete it if the file already exists in the volume)
 COPY --chmod=755 ./root/var/scripts/gh-pkg-rollout.sh /tmp/gh-pkg-rollout.sh
 
 # Copy the entrypoint script and make it executable
