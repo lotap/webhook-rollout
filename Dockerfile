@@ -32,7 +32,7 @@ RUN mkdir -p \
 
 # Install docker-rollout https://github.com/wowu/docker-rollout
 RUN wget -qO /root/.docker/cli-plugins/docker-rollout \
-  https://raw.githubusercontent.com/wowu/docker-rollout/${DOCKER_ROLLOUT_RELEASE}/docker-rollout && \
+  "https://raw.githubusercontent.com/wowu/docker-rollout/${DOCKER_ROLLOUT_RELEASE}/docker-rollout" && \
   chmod 755 /root/.docker/cli-plugins/docker-rollout
 
 # Copy default configuration file
