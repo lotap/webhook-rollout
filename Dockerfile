@@ -12,7 +12,8 @@ ARG WEBHOOK_PORT=9000
 ENV WEBHOOK_PORT=$WEBHOOK_PORT
 
 # Install packages with pinned versions
-RUN apk add --no-cache \
+RUN --mount=type=cache,target=/var/cache/apk \
+  apk add --no-cache \
   docker~=${DOCKER_VERSION} \
   docker-cli-compose~=${DOCKER_CLI_COMPOSE_VERSION} \
   webhook~=${WEBHOOK_VERSION} \
@@ -32,14 +33,14 @@ RUN wget -qO /root/.docker/cli-plugins/docker-rollout \
   chmod 755 /root/.docker/cli-plugins/docker-rollout
 
 # Copy default configuration file
-COPY ./root/etc/webhook/config.yaml /etc/webhook/config.yaml
+COPY --link ./root/etc/webhook/config.yaml /etc/webhook/config.yaml
 
 # Copy default script(s) to /tmp and make executable
 # (The entrypoint script will move it to /var or delete it if the file already exists in the volume)
-COPY --chmod=755 ./root/var/scripts/gh-pkg-rollout.sh /tmp/gh-pkg-rollout.sh
+COPY --link --chmod=755 ./root/var/scripts/gh-pkg-rollout.sh /tmp/gh-pkg-rollout.sh
 
 # Copy the entrypoint script and make it executable
-COPY --chmod=755 ./root/usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --link --chmod=755 ./root/usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 WORKDIR /app
 
