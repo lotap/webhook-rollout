@@ -228,8 +228,8 @@ fi
 # Get current Alpine version more safely
 CURRENT_ALPINE_VERSION=$(grep "^ARG ALPINE_VERSION" Dockerfile | cut -d'=' -f2)
 if [ -z "$CURRENT_ALPINE_VERSION" ]; then
-	echo "Warning: Could not determine current Alpine version. Using 3.22.0 as fallback."
-	CURRENT_ALPINE_VERSION="3.22.0"
+	echo "Warning: Could not determine current Alpine version. Using 3.24.1 as fallback."
+	CURRENT_ALPINE_VERSION="3.24.1"
 fi
 
 echo "Using Alpine version: $CURRENT_ALPINE_VERSION"
