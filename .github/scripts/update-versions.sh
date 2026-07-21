@@ -146,7 +146,7 @@ update_github_release() {
 
 	if latest_tag=$(curl --silent --fail --max-time 10 \
 		${auth_header:+-H "$auth_header"} \
-		"https://api.github.com/repos/${repo_slug}/releases/latest" | jq -r .tag_name); then
+		"https://raw.githubusercontent.com/${repo_slug}/releases/latest" | jq -r .tag_name); then
 
 		if [ -n "$latest_tag" ] && [ "$latest_tag" != "null" ]; then
 			update_dockerfile_arg "$arg_var" "$latest_tag"
