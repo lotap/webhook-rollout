@@ -49,4 +49,4 @@ EXPOSE $WEBHOOK_PORT
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
-  CMD wget -nv -t1 -O http://localhost:${WEBHOOK_PORT} || exit 1
+  CMD wget -nv -t1 -O /dev/null http://localhost:${WEBHOOK_PORT} || exit 1
