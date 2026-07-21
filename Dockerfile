@@ -1,20 +1,23 @@
 ARG ALPINE_VERSION=3.24.1
 FROM alpine:${ALPINE_VERSION}
 
-ARG DOCKER_VERSION=29.5.3
+# Alpine package versions
+ARG DOCKER_CLI_VERSION=29.5.3
 ARG DOCKER_CLI_COMPOSE_VERSION=5.1.4
 ARG WEBHOOK_VERSION=2.8.3
 ARG TINI_VERSION=0.19.0
 
+# Github release versions
 ARG DOCKER_ROLLOUT_RELEASE=v0.14
 
+# Configuration
 ARG WEBHOOK_PORT=9000
 ENV WEBHOOK_PORT=$WEBHOOK_PORT
 
 # Install packages with pinned versions
 RUN apk add --no-cache \
   ca-certificates \
-  docker~=${DOCKER_VERSION} \
+  docker-cli~=${DOCKER_CLI_VERSION} \
   docker-cli-compose~=${DOCKER_CLI_COMPOSE_VERSION} \
   webhook~=${WEBHOOK_VERSION} \
   tini~=${TINI_VERSION}
