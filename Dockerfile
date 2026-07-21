@@ -17,10 +17,10 @@ ENV WEBHOOK_PORT=$WEBHOOK_PORT
 # Install packages with pinned versions
 RUN apk add --no-cache \
   ca-certificates \
-  docker-cli~=${DOCKER_CLI_VERSION} \
-  docker-cli-compose~=${DOCKER_CLI_COMPOSE_VERSION} \
-  webhook~=${WEBHOOK_VERSION} \
-  tini~=${TINI_VERSION}
+  docker-cli=~${DOCKER_CLI_VERSION} \
+  docker-cli-compose=~${DOCKER_CLI_COMPOSE_VERSION} \
+  webhook=~${WEBHOOK_VERSION} \
+  tini=~${TINI_VERSION}
 
 # Create necessary directories
 RUN mkdir -p \
