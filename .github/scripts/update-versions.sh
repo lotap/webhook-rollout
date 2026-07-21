@@ -146,7 +146,7 @@ update_github_release() {
 
 	if latest_tag=$(curl --silent --fail --max-time 10 \
 		${auth_header:+-H "$auth_header"} \
-		"https://raw.githubusercontent.com/${repo_slug}/releases/latest" | jq -r .tag_name); then
+		"https://api.github.com/repos/${repo_slug}/releases/latest" | jq -r .tag_name); then
 
 		if [ -n "$latest_tag" ] && [ "$latest_tag" != "null" ]; then
 			update_dockerfile_arg "$arg_var" "$latest_tag"
@@ -192,8 +192,8 @@ if [ -n "$RELEASE_ARGS" ]; then
 	FLAT_DOCKERFILE=$(tr -d '\\\n' < Dockerfile)
 
 	for arg_var in $RELEASE_ARGS; do
-		if [[ "$FLAT_DOCKERFILE" =~ https://api.github.com/repos/([a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)/.*/\$\{${arg_var}\} ]]; then
-			repo_slug="${BASH_REMATCH[1]}"
+		if [[ "$FLAT_DOCKERFILE" =~ https://(api\.github\.com/repos/|raw\.githubusercontent\.com/)([a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)/.*\$\{${arg_var}\} ]]; then
+			repo_slug="${BASH_REMATCH[2]}"
 			echo "$arg_var=$repo_slug" >> "$GITHUB_RELEASES_FILE"
 			echo "Found GitHub release mapping: ${arg_var} -> ${repo_slug}"
 		else
@@ -205,8 +205,8 @@ fi
 # Discover APK packages from the 'apk add' command
 echo "--> Searching for APK package definitions (_VERSION)..."
 sed -n '/apk add/,/[^\\]$/p' Dockerfile | \
-  grep -E '[a-zA-Z0-9-]+~?=\$\{[A-Z0-9_]*_VERSION\}' | \
-  sed -E 's/^[[:space:]]*([a-zA-Z0-9-]+)~?=\$\{([A-Z0-9_]*_VERSION)\}.*/\2=\1/' \
+  grep -E '[a-zA-Z0-9-]+=~?\$\{[A-Z0-9_]*_VERSION\}' | \
+  sed -E 's/^[[:space:]]*([a-zA-Z0-9-]+)=~?\$\{([A-Z0-9_]*_VERSION)\}.*/\2=\1/' \
   >> "$APK_PACKAGES_FILE"
 
 # Display discovered APK packages
